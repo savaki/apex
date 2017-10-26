@@ -82,6 +82,19 @@ out.on('data', function(line){
     return
   }
 
+  // allows go lambda functions to return custom errorTypes for use with AWS Step Functions
+  // http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-mode-exceptions.html
+  if (msg.error !== undefined && msg.error.errorType !== undefined) {
+    function CustomError(err) {
+        this.name = err.errorType;
+        this.message = err.errorMessage;
+    }
+    CustomError.prototype = new Error();
+
+    c(new CustomError(msg.error));
+    return
+  }
+
   c(msg.error, msg.value);
 });
 
